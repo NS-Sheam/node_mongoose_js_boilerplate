@@ -3,12 +3,14 @@ import app from "./app.js";
 import config from "./app/config/index.js";
 import globalErrorHandler from "./app/middlewares/globalErrorHandler.js";
 import notFound from "./app/middlewares/notFoundRoutes.js";
+import seedAdmin from "./app/DB/index.js";
 
 let server;
 
 async function main() {
   try {
     await mongoose.connect(config.database_url);
+    await seedAdmin();
     server = app.listen(config.port, () => {
       console.log(`Server running at port ${config.port}`);
     });
@@ -23,12 +25,7 @@ app.use(globalErrorHandler);
 app.use(notFound);
 
 process.on("unhandledRejection", (error, promise) => {
-  console.log(
-    "❌ Shutting down the server due to unhandled rejection at:",
-    promise,
-    "with reason:",
-    error
-  );
+  console.log("❌ Shutting down the server due to unhandled rejection at:", promise, "with reason:", error);
   if (server) {
     server.close(() => {
       process.exit(1);
@@ -37,10 +34,7 @@ process.on("unhandledRejection", (error, promise) => {
 });
 
 process.on("uncaughtException", (error) => {
-  console.log(
-    "❌ Shutting down the server due to uncaught exception with reason:",
-    error
-  );
+  console.log("❌ Shutting down the server due to uncaught exception with reason:", error);
   if (server) {
     server.close(() => {
       process.exit(1);
